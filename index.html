@@ -272,6 +272,7 @@
   </head>
   <body cz-shortcut-listen="true">
     <header
+      id="site-header"
       class="fixed left-0 right-0 top-0 z-50 transition-all duration-300 bg-transparent py-5"
     >
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6">
@@ -279,6 +280,7 @@
           href="#home"
           class="flex items-center"
           ><img
+            id="site-logo"
             src="assets/logo-white.png"
             alt="Sahaja Yoga Amsterdam"
             class="h-8 w-auto transition-all duration-300 brightness-100"
@@ -286,19 +288,19 @@
         <nav class="hidden items-center gap-8 md:flex">
           <a
             href="#home"
-            class="relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
+            class="nav-link relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
             >Home</a
           ><a
             href="#about"
-            class="relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
+            class="nav-link relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
             >About</a
           ><a
             href="#evening"
-            class="relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
+            class="nav-link relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
             >Evening</a
           ><a
             href="#schedule"
-            class="relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
+            class="nav-link relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary text-primary-foreground/90"
             >Schedule</a
           ><a
             href="https://meeting.sahajayoga.nl/register"
@@ -330,13 +332,34 @@
           </svg>
         </button>
       </div>
-      <div id="mobile-menu" class="hidden md:hidden bg-black/80 backdrop-blur">
-        <nav class="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4">
-          <a href="#home" class="rounded-lg px-3 py-3 text-sm font-medium text-primary-foreground/90 hover:bg-white/10">Home</a>
-          <a href="#about" class="rounded-lg px-3 py-3 text-sm font-medium text-primary-foreground/90 hover:bg-white/10">About</a>
-          <a href="#evening" class="rounded-lg px-3 py-3 text-sm font-medium text-primary-foreground/90 hover:bg-white/10">Evening</a>
-          <a href="#schedule" class="rounded-lg px-3 py-3 text-sm font-medium text-primary-foreground/90 hover:bg-white/10">Schedule</a>
-          <a href="https://meeting.sahajayoga.nl/register" target="_blank" rel="noreferrer" class="mt-2 rounded-full bg-primary px-5 py-3 text-center text-sm font-semibold text-primary-foreground shadow-md transition hover:brightness-110">Register</a>
+      <div
+        id="mobile-menu"
+        class="hidden border-t border-border/60 bg-background/98 px-6 py-4 backdrop-blur md:hidden"
+      >
+        <nav class="flex flex-col gap-4">
+          <a
+            href="#home"
+            class="text-base font-medium text-foreground/90 transition-colors hover:text-primary"
+            >Home</a
+          ><a
+            href="#about"
+            class="text-base font-medium text-foreground/90 transition-colors hover:text-primary"
+            >About</a
+          ><a
+            href="#evening"
+            class="text-base font-medium text-foreground/90 transition-colors hover:text-primary"
+            >Evening</a
+          ><a
+            href="#schedule"
+            class="text-base font-medium text-foreground/90 transition-colors hover:text-primary"
+            >Schedule</a
+          ><a
+            href="https://meeting.sahajayoga.nl/register"
+            target="_blank"
+            rel="noreferrer"
+            class="mt-2 inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-md transition hover:brightness-110"
+            >Register — it's free</a
+          >
         </nav>
       </div>
     </header>
@@ -779,25 +802,72 @@
     <!--/$-->
     <script>
       (function () {
+        var header = document.getElementById("site-header");
+        var logo = document.getElementById("site-logo");
+        var links = document.querySelectorAll(".nav-link");
         var btn = document.getElementById("menu-button");
         var menu = document.getElementById("mobile-menu");
-        if (!btn || !menu) return;
+        if (!header || !logo || !btn || !menu) return;
 
-        function setMenu(open) {
-          menu.classList.toggle("hidden", !open);
+        var scrolled = false;
+        var open = false;
+
+        function render() {
+          header.className =
+            "fixed left-0 right-0 top-0 z-50 transition-all duration-300 " +
+            (scrolled
+              ? "border-b border-border/60 bg-background/95 py-3 shadow-sm backdrop-blur"
+              : "bg-transparent py-5");
+
+          logo.className =
+            "h-8 w-auto transition-all duration-300 " +
+            (scrolled || open ? "brightness-0 saturate-100" : "brightness-100");
+
+          links.forEach(function (a) {
+            a.className =
+              "nav-link relative px-1 py-2 text-sm font-medium transition-colors hover:text-primary " +
+              (scrolled ? "text-foreground/80" : "text-primary-foreground/90");
+          });
+
+          btn.className =
+            "md:hidden rounded-md p-2 transition-colors " +
+            (scrolled ? "text-foreground hover:bg-muted" : "text-primary-foreground hover:bg-white/10");
           btn.setAttribute("aria-expanded", String(open));
           btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+
+          var path = btn.querySelector("path");
+          if (path) {
+            path.setAttribute(
+              "d",
+              open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
+            );
+          }
+
+          menu.classList.toggle("hidden", !open);
+        }
+
+        function onScroll() {
+          var next = window.scrollY > 24;
+          if (next !== scrolled) {
+            scrolled = next;
+            render();
+          }
         }
 
         btn.addEventListener("click", function () {
-          setMenu(menu.classList.contains("hidden"));
+          open = !open;
+          render();
         });
 
         menu.querySelectorAll("a").forEach(function (link) {
           link.addEventListener("click", function () {
-            setMenu(false);
+            open = false;
+            render();
           });
         });
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
       })();
     </script>
     <aside
